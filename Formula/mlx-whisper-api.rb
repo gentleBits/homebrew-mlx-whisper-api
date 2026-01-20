@@ -17,6 +17,10 @@ class MlxWhisperApi < Formula
   depends_on :macos
   depends_on "python@3.12"
 
+  # Skip relocation of Python extension modules (.so files) to avoid
+  # "load commands do not fit in header" errors with Rust-built extensions
+  skip_clean "libexec"
+
   def install
     # Create a virtualenv and install via pip (allows binary wheels)
     venv = virtualenv_create(libexec, "python3.12")
