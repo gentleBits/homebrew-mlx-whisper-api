@@ -3,8 +3,6 @@
 
 # Homebrew formula for MLX Whisper API
 class MlxWhisperApi < Formula
-  include Language::Python::Virtualenv
-
   desc "REST API for audio-to-text transcription using MLX Whisper on Apple Silicon"
   homepage "https://github.com/gentleBits/mlx-whisper-api"
   url "https://github.com/gentleBits/mlx-whisper-api/archive/refs/tags/v0.1.0.tar.gz"
@@ -17,25 +15,38 @@ class MlxWhisperApi < Formula
   depends_on :macos
   depends_on "python@3.12"
 
-  # Skip relocation of Python extension modules (.so files) to avoid
-  # "load commands do not fit in header" errors with Rust-built extensions
-  skip_clean "libexec"
-
   def install
-    # Create a virtualenv and install via pip (allows binary wheels)
-    venv = virtualenv_create(libexec, "python3.12")
+    # Copy source to libexec for post_install to use
+    # post_install bypasses Homebrew's dylib relocation which fails on
+    # Rust-built Python extensions (pydantic-core, watchfiles, httptools)
+    (libexec/"src").install Dir["*"]
 
-    # Use system pip to install dependencies into the venv
-    system Formula["python@3.12"].opt_bin/"python3.12", "-m", "pip", "install",
-           "--target=#{libexec}/lib/python3.12/site-packages",
+    # Create bin script that will invoke the package after post_install
+    (bin/"mlx-whisper-api").write <<~EOS
+      #!/bin/bash
+      exec "#{libexec}/bin/python" -m app "$@"
+    EOS
+  end
+
+  def post_install
+    # Create virtualenv in post_install to bypass Homebrew's dylib relocation
+    python = Formula["python@3.12"].opt_bin/"python3.12"
+    venv_python = libexec/"bin/python"
+
+    # Create virtualenv with pip
+    system python, "-m", "venv", libexec
+
+    # Install dependencies using python -m pip (more reliable than pip script)
+    system venv_python, "-m", "pip", "install", "--upgrade", "pip"
+    system venv_python, "-m", "pip", "install",
            "mlx-whisper==0.4.2",
            "fastapi==0.115.7",
            "uvicorn[standard]==0.34.0",
            "python-multipart==0.0.20",
            "huggingface-hub==0.27.1"
 
-    # Install the package itself
-    venv.pip_install_and_link buildpath
+    # Install the package itself from the copied source
+    system venv_python, "-m", "pip", "install", libexec/"src"
   end
 
   def caveats
