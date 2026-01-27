@@ -5,8 +5,8 @@
 class MlxWhisperApi < Formula
   desc "REST API for audio-to-text transcription using MLX Whisper on Apple Silicon"
   homepage "https://github.com/gentleBits/mlx-whisper-api"
-  url "https://github.com/gentleBits/mlx-whisper-api/archive/refs/tags/v0.2.0.tar.gz"
-  sha256 "9821d5a13d18fea77b1fed94b71eba9809037c46c3cf967419a9e326a7407503"
+  url "https://github.com/gentleBits/mlx-whisper-api/archive/refs/tags/v0.3.0.tar.gz"
+  sha256 "566e6e395606017ff88ebb9d6c098684c30152685720ec97d4e98851f619407e"
   license "MIT"
   head "https://github.com/gentleBits/mlx-whisper-api.git", branch: "main"
 
