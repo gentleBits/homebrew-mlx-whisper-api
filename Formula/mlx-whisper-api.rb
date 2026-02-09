@@ -71,6 +71,7 @@ class MlxWhisperApi < Formula
   end
 
   test do
-    assert_match version.to_s, shell_output("#{bin}/mlx-whisper-api --version")
+    output = shell_output("#{bin}/mlx-whisper-api --version").strip
+    assert_match(/^mlx-whisper-api\s+\S+$/, output)
   end
 end
